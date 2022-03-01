@@ -1,6 +1,8 @@
-import 'package:flutter/cupertino.dart';
+// import 'package:flutter/cupertino.dart';
+import 'package:flash_chat_firebase/screens/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flash_chat_firebase/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   static const String id='login_screen';
@@ -11,6 +13,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   late String lemail;
   late String lpassword;
+  final _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,9 +65,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 borderRadius: BorderRadius.all(Radius.circular(30.0)),
                 elevation: 5.0,
                 child: MaterialButton(
-                  onPressed: () {
-                    print(lemail);
-                    print(lpassword);
+                  onPressed: () async{
+                    try{
+                      final user =await _auth.signInWithEmailAndPassword(email: lemail, password: lpassword);
+                      if(user!=null){
+                        Navigator.pushNamed(context, ChatScreen.id);
+                      }
+                    }catch(e){
+                      print(e);
+                    }
                   },
                   minWidth: 200.0,
                   height: 42.0,

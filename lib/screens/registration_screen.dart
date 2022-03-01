@@ -2,6 +2,7 @@ import 'package:flash_chat_firebase/screens/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flash_chat_firebase/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '';
 
 class RegistrationScreen extends StatefulWidget {
   static const String id = 'registration_screen';
