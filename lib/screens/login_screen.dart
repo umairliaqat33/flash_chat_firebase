@@ -89,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 42.0,
                     child: Text(
                       'Log In',
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
                 ),
