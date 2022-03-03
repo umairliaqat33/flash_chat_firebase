@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flash_chat_firebase/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
 final _fireStore = FirebaseFirestore.instance;
+late User LoggedInUser;
+
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
   @override
@@ -13,9 +14,8 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final messageTextController=  TextEditingController();
+  final messageTextController = TextEditingController();
   final _auth = FirebaseAuth.instance;
-  late User LoggedInUser;
   late String messageText;
   @override
   void initState() {
@@ -81,14 +81,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       controller: messageTextController,
                       onChanged: (value) {
                         messageText = value;
-                        messageTextController.clear();
                       },
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
                   TextButton(
                     onPressed: () {
-                      //Implement send functionality.
+                      messageTextController.clear();
                       _fireStore.collection('messages').add({
                         'text': messageText,
                         'Sender': LoggedInUser.email,
@@ -123,16 +122,19 @@ class MessageStream extends StatelessWidget {
         }
         final messages = snapshot.data;
         List<MessageBubbles> messageBubbles = [];
-        for (var message in messages!.docs) {
+        for (var message in messages!.docs.reversed) {
           final messageText = message.get('text');
           final messageSender = message.get('Sender');
-          final messageBubble =
-          MessageBubbles(messageText, messageSender);
+
+          final currentUser = LoggedInUser.email;
+          final messageBubble = MessageBubbles(
+              messageText, messageSender, currentUser == messageSender);
 
           messageBubbles.add(messageBubble);
         }
         return Expanded(
           child: ListView(
+            reverse: true,
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
             children: messageBubbles,
           ),
@@ -142,33 +144,40 @@ class MessageStream extends StatelessWidget {
   }
 }
 
-
-
 class MessageBubbles extends StatelessWidget {
-  MessageBubbles(this.text, this.sender);
+  MessageBubbles(this.text, this.sender, this.isMe);
   final String text;
   final String sender;
-
+  final bool isMe;
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(10.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Text(
             sender,
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
           Material(
-              color: Colors.lightBlueAccent,
-              borderRadius: BorderRadius.circular(20),
+              color: isMe ? Colors.lightBlueAccent : Colors.white,
+              borderRadius: isMe
+                  ? BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30))
+                  : BorderRadius.only(
+                      topRight: Radius.circular(30),
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30)),
               elevation: 5,
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 child: Text(
                   text,
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: isMe ? Colors.white : Colors.black54),
                 ),
               )),
         ],
