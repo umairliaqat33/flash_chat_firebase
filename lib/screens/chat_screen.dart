@@ -8,6 +8,7 @@ final _fireStore = FirebaseFirestore.instance;
 late User LoggedInUser;
 final _auth = FirebaseAuth.instance;
 
+
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
   @override
@@ -76,7 +77,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       messageTextController.clear();
                       _fireStore.collection('messages').add({
                         'text': messageText,
-                        'Sender': LoggedInUser.email,
+                        'sender': LoggedInUser.email,
+                        'time': FieldValue.serverTimestamp(),
                       });
                     },
                     child: Icon(Icons.send),
@@ -110,17 +112,18 @@ class MessageStream extends StatelessWidget {
         List<MessageBubbles> messageBubbles = [];
         for (var message in messages!.docs) {
           final messageText = message.get('text');
-          final messageSender = message.get('Sender');
+          final messageSender = message.get('sender');
+          final Timestamp messageTime = message.get("time") as Timestamp;
 
           final currentUser = LoggedInUser.email;
           final messageBubble = MessageBubbles(
-              messageText, messageSender, currentUser == messageSender);
+              messageText, messageSender, currentUser == messageSender,messageTime);
 
           messageBubbles.add(messageBubble);
         }
         return Expanded(
           child: ListView(
-            reverse: true,
+            // reverse: true,
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
             children: messageBubbles,
           ),
@@ -131,10 +134,11 @@ class MessageStream extends StatelessWidget {
 }
 
 class MessageBubbles extends StatelessWidget {
-  MessageBubbles(this.text, this.sender, this.isMe);
+  MessageBubbles(this.text, this.sender, this.isMe,this.time);
   final String text;
   final String sender;
   final bool isMe;
+  final Timestamp time;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -162,7 +166,7 @@ class MessageBubbles extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 child: Text(
-                  text,
+                  "$text" ,
                   style: TextStyle(color: isMe ? Colors.white : Colors.black54),
                 ),
               )),
