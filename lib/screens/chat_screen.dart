@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 final _fireStore = FirebaseFirestore.instance;
 late User LoggedInUser;
+final _auth = FirebaseAuth.instance;
 
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
@@ -15,7 +16,6 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final messageTextController = TextEditingController();
-  final _auth = FirebaseAuth.instance;
   late String messageText;
   @override
   void initState() {
@@ -33,20 +33,7 @@ class _ChatScreenState extends State<ChatScreen> {
       print(e);
     }
   }
-  // void getMessages() async{
-  //   final messages= await _fireStore.collection('messages').get();
-  //   for (var message in messages.docs){
-  //     print(message.data() );
-  //   }
-  // }
 
-  void messageStream() async {
-    await for (var snapshots in _fireStore.collection('messages').snapshots()) {
-      for (var message in snapshots.docs) {
-        print(message.data());
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +44,6 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
-                messageStream();
                 _auth.signOut();
                 Navigator.pop(context);
               }),
@@ -122,7 +108,7 @@ class MessageStream extends StatelessWidget {
         }
         final messages = snapshot.data;
         List<MessageBubbles> messageBubbles = [];
-        for (var message in messages!.docs.reversed) {
+        for (var message in messages!.docs) {
           final messageText = message.get('text');
           final messageSender = message.get('Sender');
 
